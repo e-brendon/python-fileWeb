@@ -21,7 +21,6 @@
       {% csrf_token %}
       <input type="hidden" name="current" value="{{ current_rel }}">
       <div style="display:flex; gap:8px; margin:12px 0;">
-        <button type="submit" name="download_all" value="1">Baixar tudo (zip)</button>
         <button type="submit">Baixar selecionados</button>
       </div>
       <table>
@@ -36,7 +35,7 @@
           {% for file in files %}
             {% if file.kind == "dir" %}
               <tr>
-                <td></td>
+                <td><input type="checkbox" name="files" value="{{ file.relative_path }}"></td>
                 <td>📁 <a href="{% url 'files_in_dir' file.relative_path %}">{{ file.name }}/</a></td>
                 <td>—</td>
               </tr>

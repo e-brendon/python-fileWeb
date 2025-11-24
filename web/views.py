@@ -156,20 +156,13 @@ def download_multiple_view(request: HttpRequest) -> HttpResponse:
     redirect_url = reverse("files") if not current_rel else reverse("files_in_dir", args=[current_rel])
 
     selected = request.POST.getlist("files")
-    download_all = request.POST.get("download_all")
 
-    if not selected and not download_all:
-        messages.error(request, "Selecione pelo menos um arquivo ou use 'Baixar tudo'.")
+    if not selected:
+        messages.error(request, "Selecione pelo menos um item para baixar.")
         return redirect(redirect_url)
 
     paths_to_zip = []
-    if download_all:
-        # inclui todos os arquivos dentro do diretório base
-        for file_path in base_dir.rglob("*"):
-            if file_path.is_file():
-                paths_to_zip.append(file_path.relative_to(base_dir).as_posix())
-    else:
-        paths_to_zip = selected
+    paths_to_zip = selected
 
     if not paths_to_zip:
         messages.error(request, "Nenhum arquivo encontrado para download.")
