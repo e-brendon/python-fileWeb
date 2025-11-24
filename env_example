@@ -9,3 +9,4 @@ DIR=
 # DEBUG=true
 # SECRET_KEY=alterar-para-um-valor-seguro
 # ALLOWED_HOSTS=*
+# CSRF_TRUSTED_ORIGINS=https://iuciuberaba.easyzeus.com
