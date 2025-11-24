@@ -4,7 +4,7 @@
 
 {% block body %}
   <h1>Entrar</h1>
-  <p class="muted">Use as credenciais definidas em <code>.env</code> para acessar os arquivos.</p>
+  <p class="muted">Use as credenciais definidas Fornecidas para acessar os arquivos.</p>
   {% if messages %}
     <ul class="messages">
       {% for message in messages %}
@@ -23,7 +23,7 @@
       <input id="password" name="password" type="password" autocomplete="current-password" required>
     </div>
     {% if not has_dir %}
-      <p class="muted">Configure <code>DIR</code> no .env para listar arquivos.</p>
+      <p class="muted">Peça para configurar para poder listar arquivos.</p>
     {% endif %}
     <button type="submit">Acessar</button>
   </form>

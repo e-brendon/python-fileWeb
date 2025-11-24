@@ -5,9 +5,7 @@
 {% block body %}
   <div class="topbar">
     <div>
-      <h1>Arquivos</h1>
-      <p class="muted">Base: <span class="pill">{{ base_dir }}</span></p>
-      <p class="muted">Atual: <span class="pill">{{ current_dir }}</span></p>
+      <h1>Backup Zeus⚡️ 2025</h1>
       {% if parent_rel %}
         <p><a href="{% url 'files_in_dir' parent_rel %}">⟵ Voltar</a></p>
       {% endif %}
@@ -19,29 +17,40 @@
   </div>
 
   {% if files %}
-    <table>
-      <thead>
-        <tr>
-          <th>Nome</th>
-          <th>Tamanho (bytes)</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for file in files %}
-          {% if file.kind == "dir" %}
-            <tr>
-              <td>📁 <a href="{% url 'files_in_dir' file.relative_path %}">{{ file.name }}/</a></td>
-              <td>—</td>
-            </tr>
-          {% else %}
-            <tr>
-              <td>📄 <a href="{% url 'download' file.relative_path %}">{{ file.name }}</a></td>
-              <td>{{ file.size }}</td>
-            </tr>
-          {% endif %}
-        {% endfor %}
-      </tbody>
-    </table>
+    <form method="post" action="{% url 'download_multiple' %}">
+      {% csrf_token %}
+      <input type="hidden" name="current" value="{{ current_rel }}">
+      <div style="display:flex; gap:8px; margin:12px 0;">
+        <button type="submit" name="download_all" value="1">Baixar tudo (zip)</button>
+        <button type="submit">Baixar selecionados</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th>Nome</th>
+            <th>Tamanho (bytes)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for file in files %}
+            {% if file.kind == "dir" %}
+              <tr>
+                <td></td>
+                <td>📁 <a href="{% url 'files_in_dir' file.relative_path %}">{{ file.name }}/</a></td>
+                <td>—</td>
+              </tr>
+            {% else %}
+              <tr>
+                <td><input type="checkbox" name="files" value="{{ file.relative_path }}"></td>
+                <td>📄 <a href="{% url 'download' file.relative_path %}">{{ file.name }}</a></td>
+                <td>{{ file.size }}</td>
+              </tr>
+            {% endif %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </form>
   {% else %}
     <p class="muted">Nenhum arquivo encontrado.</p>
   {% endif %}

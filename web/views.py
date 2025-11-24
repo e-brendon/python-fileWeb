@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from functools import wraps
 from pathlib import Path
+from io import BytesIO
+import zipfile
 
 from django.conf import settings
 from django.contrib import messages
@@ -103,6 +105,10 @@ def files_view(request: HttpRequest, relative_path: str = "") -> HttpResponse:
     if target_dir != base_dir:
         parent_rel = target_dir.parent.relative_to(base_dir).as_posix()
 
+    current_rel = ""
+    if target_dir != base_dir:
+        current_rel = target_dir.relative_to(base_dir).as_posix()
+
     return render(
         request,
         "files.html",
@@ -111,6 +117,7 @@ def files_view(request: HttpRequest, relative_path: str = "") -> HttpResponse:
             "base_dir": base_dir,
             "current_dir": target_dir,
             "parent_rel": parent_rel,
+            "current_rel": current_rel,
         },
     )
 
@@ -135,3 +142,57 @@ def download_view(request: HttpRequest, relative_path: str) -> HttpResponse:
         as_attachment=True,
         filename=target.name,
     )
+
+
+@_ensure_authenticated
+@require_http_methods(["POST"])
+def download_multiple_view(request: HttpRequest) -> HttpResponse:
+    if not settings.FILES_ROOT:
+        messages.error(request, "Configure DIR no arquivo .env.")
+        return redirect("logout")
+
+    base_dir: Path = settings.FILES_ROOT
+    current_rel = request.POST.get("current", "")
+    redirect_url = reverse("files") if not current_rel else reverse("files_in_dir", args=[current_rel])
+
+    selected = request.POST.getlist("files")
+    download_all = request.POST.get("download_all")
+
+    if not selected and not download_all:
+        messages.error(request, "Selecione pelo menos um arquivo ou use 'Baixar tudo'.")
+        return redirect(redirect_url)
+
+    paths_to_zip = []
+    if download_all:
+        # inclui todos os arquivos dentro do diretório base
+        for file_path in base_dir.rglob("*"):
+            if file_path.is_file():
+                paths_to_zip.append(file_path.relative_to(base_dir).as_posix())
+    else:
+        paths_to_zip = selected
+
+    if not paths_to_zip:
+        messages.error(request, "Nenhum arquivo encontrado para download.")
+        return redirect(redirect_url)
+
+    buf = BytesIO()
+    with zipfile.ZipFile(buf, "w", compression=zipfile.ZIP_DEFLATED) as zipf:
+        for rel in paths_to_zip:
+            target = (base_dir / rel).resolve()
+            if base_dir not in target.parents and target != base_dir:
+                continue
+            if target.is_file():
+                zipf.write(target, arcname=target.relative_to(base_dir).as_posix())
+            elif target.is_dir():
+                for file_path in target.rglob("*"):
+                    if file_path.is_file():
+                        zipf.write(file_path, arcname=file_path.relative_to(base_dir).as_posix())
+
+    buf.seek(0)
+    filename = "backup.zip"
+    if current_rel:
+        filename = f"{Path(current_rel).name or 'backup'}.zip"
+
+    response = HttpResponse(buf.getvalue(), content_type="application/zip")
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    return response
