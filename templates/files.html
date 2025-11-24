@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Arquivos | fileweb{% endblock %}
+
+{% block body %}
+  <div class="topbar">
+    <div>
+      <h1>Arquivos</h1>
+      <p class="muted">Listando arquivos em <span class="pill">{{ base_dir }}</span></p>
+    </div>
+    <form method="post" action="{% url 'logout' %}">
+      {% csrf_token %}
+      <button type="submit">Sair</button>
+    </form>
+  </div>
+
+  {% if files %}
+    <table>
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Tamanho (bytes)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for file in files %}
+          <tr>
+            <td><a href="{% url 'download' file.relative_path %}">{{ file.name }}</a></td>
+            <td>{{ file.size }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="muted">Nenhum arquivo encontrado.</p>
+  {% endif %}
+{% endblock %}
