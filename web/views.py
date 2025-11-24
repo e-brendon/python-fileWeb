@@ -60,7 +60,7 @@ def logout_view(request: HttpRequest) -> HttpResponse:
 
 
 @_ensure_authenticated
-def files_view(request: HttpRequest) -> HttpResponse:
+def files_view(request: HttpRequest, relative_path: str = "") -> HttpResponse:
     if not settings.FILES_ROOT:
         messages.error(request, "Configure DIR no arquivo .env.")
         return redirect("logout")
@@ -70,16 +70,38 @@ def files_view(request: HttpRequest) -> HttpResponse:
         messages.error(request, f"Diretório não encontrado: {base_dir}")
         return redirect("logout")
 
+    target_dir = (base_dir / relative_path).resolve()
+    # Impede escapar do diretório base
+    if base_dir not in target_dir.parents and target_dir != base_dir:
+        raise Http404("Diretório inválido.")
+
+    if not target_dir.is_dir():
+        raise Http404("Diretório não encontrado.")
+
     entries = []
-    for entry in sorted(base_dir.iterdir()):
-        if entry.is_file():
+    for entry in sorted(target_dir.iterdir()):
+        rel = entry.relative_to(base_dir)
+        if entry.is_dir():
             entries.append(
                 {
+                    "kind": "dir",
                     "name": entry.name,
-                    "size": entry.stat().st_size,
-                    "relative_path": entry.name,
+                    "relative_path": rel.as_posix(),
                 }
             )
+        elif entry.is_file():
+            entries.append(
+                {
+                    "kind": "file",
+                    "name": entry.name,
+                    "size": entry.stat().st_size,
+                    "relative_path": rel.as_posix(),
+                }
+            )
+
+    parent_rel = None
+    if target_dir != base_dir:
+        parent_rel = target_dir.parent.relative_to(base_dir).as_posix()
 
     return render(
         request,
@@ -87,6 +109,8 @@ def files_view(request: HttpRequest) -> HttpResponse:
         {
             "files": entries,
             "base_dir": base_dir,
+            "current_dir": target_dir,
+            "parent_rel": parent_rel,
         },
     )
 

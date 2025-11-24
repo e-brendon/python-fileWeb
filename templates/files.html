@@ -6,7 +6,11 @@
   <div class="topbar">
     <div>
       <h1>Arquivos</h1>
-      <p class="muted">Listando arquivos em <span class="pill">{{ base_dir }}</span></p>
+      <p class="muted">Base: <span class="pill">{{ base_dir }}</span></p>
+      <p class="muted">Atual: <span class="pill">{{ current_dir }}</span></p>
+      {% if parent_rel %}
+        <p><a href="{% url 'files_in_dir' parent_rel %}">⟵ Voltar</a></p>
+      {% endif %}
     </div>
     <form method="post" action="{% url 'logout' %}">
       {% csrf_token %}
@@ -24,10 +28,17 @@
       </thead>
       <tbody>
         {% for file in files %}
-          <tr>
-            <td><a href="{% url 'download' file.relative_path %}">{{ file.name }}</a></td>
-            <td>{{ file.size }}</td>
-          </tr>
+          {% if file.kind == "dir" %}
+            <tr>
+              <td>📁 <a href="{% url 'files_in_dir' file.relative_path %}">{{ file.name }}/</a></td>
+              <td>—</td>
+            </tr>
+          {% else %}
+            <tr>
+              <td>📄 <a href="{% url 'download' file.relative_path %}">{{ file.name }}</a></td>
+              <td>{{ file.size }}</td>
+            </tr>
+          {% endif %}
         {% endfor %}
       </tbody>
     </table>
