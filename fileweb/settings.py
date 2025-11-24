@@ -133,6 +133,10 @@ if FILES_ROOT:
 USERNAME = os.getenv("USER", "")
 PASSWORD = os.getenv("PWD", "")
 
+# Quando servido atrás de /backup via proxy reverso (Nginx)
+FORCE_SCRIPT_NAME = "/backup"
+USE_X_FORWARDED_HOST = True
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
