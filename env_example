@@ -1,0 +1,11 @@
+# Credenciais de login
+USER=brendon
+PWD=123
+
+# Diretório cujos arquivos serão listados
+DIR=
+
+# Outras opções
+# DEBUG=true
+# SECRET_KEY=alterar-para-um-valor-seguro
+# ALLOWED_HOSTS=*
