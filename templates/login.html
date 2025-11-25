@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Entrar | fileweb{% endblock %}
+{% block title %}Backup Zeus{% endblock %}
 
 {% block body %}
   <h1>Entrar</h1>
@@ -23,7 +23,7 @@
       <input id="password" name="password" type="password" autocomplete="current-password" required>
     </div>
     {% if not has_dir %}
-      <p class="muted">Peça para configurar para poder listar arquivos.</p>
+      <p class="muted">Solicite acesso para seus backups</p>
     {% endif %}
     <button type="submit">Acessar</button>
   </form>
