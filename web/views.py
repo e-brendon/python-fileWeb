@@ -169,7 +169,8 @@ def download_multiple_view(request: HttpRequest) -> HttpResponse:
         return redirect(redirect_url)
 
     buf = BytesIO()
-    with zipfile.ZipFile(buf, "w", compression=zipfile.ZIP_DEFLATED) as zipf:
+    # Usamos ZIP_STORED para apenas agrupar os arquivos sem compactá-los
+    with zipfile.ZipFile(buf, "w", compression=zipfile.ZIP_STORED) as zipf:
         for rel in paths_to_zip:
             target = (base_dir / rel).resolve()
             if base_dir not in target.parents and target != base_dir:
